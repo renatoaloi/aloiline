@@ -6,3 +6,4 @@
 /transcripts
 /venv
 *.pyc
+/__pycache__

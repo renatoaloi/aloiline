@@ -1,0 +1,10 @@
+[
+  {
+    "title": "Titulo do Vídeo 1",
+    "url": "https://www.youtube.com/watch?v=VIDEO_ID",
+    "clips": [
+      { "name": "intro", "start": "00:01:10", "end": "00:02:30" },
+      { "name": "scene1", "start": "00:05:20", "end": "00:06:10" }
+    ]
+  }
+]

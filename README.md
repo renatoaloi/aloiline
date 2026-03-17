@@ -75,3 +75,17 @@ Arquivo videos.json
   }
 ]
 ```
+
+# Revisões
+
+## 2026-03-17
+
+### feat: Implement audio processing pipeline with video transcription and subtitle generation
+
+- Added audio.py for audio extraction, TTS generation, and audio adjustment.
+- Introduced legendas.py for video transcription and subtitle translation.
+- Created util.py for utility functions including timestamp generation and folder creation.
+- Developed video.py for video downloading and clipping functionalities.
+- Established pipeline.py to orchestrate video processing, audio generation, and subtitle handling.
+- Added videos.json to define video metadata and clip segments.
+- Integrated error handling and user prompts for existing files during processing.

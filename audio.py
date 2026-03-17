@@ -118,26 +118,3 @@ async def build_audio(subtitles, audio, output):
             final_audio += voice
         remove_chunks(voice_file, adjusted_file)
     final_audio.export(output, format="wav")
-
-
-# voice = AudioSegment.from_mp3(voice_file)
-# chunks = split_on_silence(
-#     voice,
-#     min_silence_len = 1000,
-#     silence_thresh = voice.dBFS - 20 #,
-#     #keep_silence = 250, # optional
-# )
-# print(f"Número de pedaços encontrados: {len(chunks)}")
-# if (chunks):
-#     print(f"Tamanho do primeiro pedaço: {len(chunks[0])} ms")
-
-# if (chunks):
-#     voice_duration = len(chunks[0])
-#     voice = chunks[0]
-# else:
-#     voice = voice
-#     voice_duration = len(voice)
-
-# #print(f"Processando segmento {i+1}/{segments[i]} ")
-# #print(f"Processando segmento {i+1}/{(int)((segments[i]['end'] - segments[i]['start']) * 1000)}ms ")
-# print(f"Segmento {i+1}: texto='{sub['text']}' | duração alvo={target_duration}ms | duração voz={len(voice)}ms | início={sub['start']} | fim={sub['end']}")

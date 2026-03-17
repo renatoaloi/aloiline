@@ -53,7 +53,7 @@ python.exe -m pip install --upgrade pip
 Agora sim:
 
 ```bash
-pip install pydub openai-whisper yt-dlp deep-translator edge-tts audioop-lts
+pip install pydub openai-whisper yt-dlp deep-translator edge-tts audioop-lts torch torchvision torchaudio
 ```
 
 # Utilização

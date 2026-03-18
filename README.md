@@ -56,6 +56,14 @@ Agora sim:
 pip install pydub openai-whisper yt-dlp deep-translator edge-tts audioop-lts torch torchvision torchaudio
 ```
 
+> **Atenção**:
+>
+> > Caso esteja executando a versão 3.11 use o comando abaixo para instalar as dependências.
+>
+> ```bash
+> pip install pydub openai-whisper yt-dlp deep-translator edge-tts torch torchvision torchaudio
+> ```
+
 # Utilização
 
 Modos de utilizar

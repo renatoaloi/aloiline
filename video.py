@@ -8,7 +8,7 @@ from util import get_timestamp
 # Videos
 # -------------------------
 
-def load_videos():
+def load_videos_from_json():
     with open("videos.json", "r", encoding="utf-8") as f:
         return json.load(f)
 

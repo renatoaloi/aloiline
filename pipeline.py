@@ -2,9 +2,9 @@ import asyncio
 import os
 from pdb import main
 
-from legendas import parse_srt, save_srt, transcribe
+from legendas import parse_srt, transcrever_legendas
 from util import create_folders, get_timestamp
-from video import download_video, cut_clip, load_videos
+from video import download_video, cut_clip, load_videos_from_json
 from audio import extract_audio, gerar_narracao, verify_audio
 
 def recuperando_video_youtube(video, title):
@@ -46,15 +46,13 @@ def processar_audio_video(clip, clip_name, video_file):
 def gerar_legendas(clip_name, audio_file):
     subtitles = [f for f in os.listdir("subtitles") if clip_name in f]
     if (subtitles):
-        i = input(f"Legenda para '{clip_name}' já existe, deseja executar a narração? (s/n): ")
+        i = input(f"Legenda para '{clip_name}' já existe, deseja reprocessar? (s/n): ")
         if i.lower() != "s":
-            return "", False
-        file_str = os.path.join("subtitles", subtitles[0])
+            file_str = os.path.join("subtitles", subtitles[0])
+        else:
+            file_str = transcrever_legendas(audio_file, clip_name)
     else:
-        print("Transcrevendo")
-        segments = transcribe(audio_file)
-        print("Salvando traduções e legendas")
-        file_str = save_srt(clip_name, segments, "en", "pt")
+        file_str = transcrever_legendas(audio_file, clip_name)
     return file_str, True
 
 async def verificar_legendas_antes_continuar(clip_name, file_str):
@@ -86,7 +84,7 @@ async def confirmar_gerar_narracao(clip_name, file_str, audio_file):
 
 async def main():
     create_folders()
-    videos = load_videos()
+    videos = load_videos_from_json()
     for video in videos:
         title = video["title"]
         video_file = recuperando_video_youtube(video, title)

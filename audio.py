@@ -110,6 +110,10 @@ async def build_audio(subtitles, audio, output):
             target_duration = subtitle_duration_ms(sub["start"], subtitles[i+1]["start"])
         else:
             target_duration = subtitle_duration_ms(sub["start"], sub["end"])
+            
+        if target_duration <= 0:
+            target_duration = 1 # Define 1ms como mínimo para evitar erro matemático
+
         # salvar cada pedaço de áudio em um arquivo temporário
         voice, voice_file = await save_chunk(sub["text"], i)
         # determinando velocidade de ajuste necessária para o pedaço de áudio se encaixar na duração da legenda

@@ -89,3 +89,9 @@ Arquivo videos.json
 - Established pipeline.py to orchestrate video processing, audio generation, and subtitle handling.
 - Added videos.json to define video metadata and clip segments.
 - Integrated error handling and user prompts for existing files during processing.
+
+### fix: Better silence alignment and transcription accuracy
+
+- update .gitignore to include venv_11;
+- modify audio processing logic for better subtitle alignment;
+- change Whisper model to medium for improved transcription accuracy

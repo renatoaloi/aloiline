@@ -71,13 +71,9 @@ async def save_chunk(chunk, i):
 def adjust_chunk(chunk, i, speed, input_file):
     voice = AudioSegment.from_mp3(input_file)
     adjusted_file = f"audio/{get_timestamp()}_tmp_voice_adjusted_{i}.mp3"
-    if speed > 1.0: # <= speed <= 2.0:
-        #print(f"Velocidade de ajuste: {speed:.2f}x | start_ms={start_ms} | len={len(final_audio)} | duration={start_ms - len(final_audio)}")
-        print(f"Velocidade de ajuste: {speed:.2f}x para o segmento '{chunk}'")
+    if speed > 1.0: 
         adjust_speed(input_file, adjusted_file, speed)
         voice = AudioSegment.from_mp3(adjusted_file)
-    else:
-        print("Sem ajuste de velocidade necessário")
     return voice, adjusted_file
 
 def adjust_silence(sub, final_audio):
@@ -86,10 +82,8 @@ def adjust_silence(sub, final_audio):
     if start_ms > len(final_audio):
         duration = start_ms - len(final_audio)
         silence = AudioSegment.silent(duration)
-        print(f"Adicionando silêncio de {len(silence)}ms para alinhar com o início do segmento\n")
         return final_audio + silence
     else:
-        print("\n")
         return final_audio
 
 def remove_chunks(voice_file, adjusted_file):
@@ -110,10 +104,8 @@ async def build_audio(subtitles, audio, output):
             target_duration = subtitle_duration_ms(sub["start"], subtitles[i+1]["start"])
         else:
             target_duration = subtitle_duration_ms(sub["start"], sub["end"])
-            
         if target_duration <= 0:
             target_duration = 1 # Define 1ms como mínimo para evitar erro matemático
-
         # salvar cada pedaço de áudio em um arquivo temporário
         voice, voice_file = await save_chunk(sub["text"], i)
         # determinando velocidade de ajuste necessária para o pedaço de áudio se encaixar na duração da legenda
@@ -122,10 +114,8 @@ async def build_audio(subtitles, audio, output):
         # adicionando silêncio se necessário para alinhar o início do áudio com o início da legenda
         final_audio = adjust_silence(sub, final_audio)
         if os.path.exists(adjusted_file):
-            print(f"Adicionando ao áudio final: '{sub['text']}' | duração={len(voice_adjusted)}ms | início={sub['start']} | fim={sub['end']}\n")
             final_audio += voice_adjusted
         else:
-            print(f"Adicionando ao áudio final: '{sub['text']}' | duração={len(voice)}ms | início={sub['start']} | fim={sub['end']}\n")
             final_audio += voice
         remove_chunks(voice_file, adjusted_file)
     final_audio.export(output, format="wav")

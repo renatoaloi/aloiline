@@ -13,7 +13,6 @@ def get_translator(source='en', target='pt'):
 def translate_segment(text="", language_in="en", language_out="pt"):
     return get_translator(source=language_in, target=language_out).translate(text)
 
-
 # -------------------------
 # Transcrições
 # -------------------------
@@ -25,27 +24,12 @@ def transcrever_legendas(audio_file, clip_name):
     file_str = save_srt(clip_name, segments, "en", "pt")
     return file_str
 
-#model = whisper.load_model("medium")
-
 def transcribe(audio_file):
-    #result = model.transcribe(audio_file)
-    #return result["segments"]
-
     # O driver_whisper retorna os segmentos formatados
     segments = driver.transcribe(audio_file)
-
     if segments is None:
         print("Erro: O driver não retornou nenhum segmento.")
         return []
-
-    # Se precisar imprimir para testar:
-    for s in segments:
-        texto = s.get('text', '')
-        print(f"Transcrito: {texto}")
-    
-    print(segments[-3])
-    print(segments[-2])
-    print(segments[-1])
     return segments
 
 # -------------------------
@@ -63,21 +47,16 @@ def save_srt(base_name, segments, language_in, language_out):
             else:
                 start_ms = seg.get("t0", 0) * 10 
                 end_ms = seg.get("t1", 0) * 10
-
             # Converte para segundos para a função format_time
             start_sec = start_ms / 1000.0
             end_sec = end_ms / 1000.0
-            
             # Segurança: Se o tempo for igual, adiciona 1ms para evitar divisão por zero
             if start_sec == end_sec:
                 end_sec += 0.001
-
             start = format_time(start_sec)
             end = format_time(end_sec)
-            
             text_in = seg.get("text", "").strip()
             text_out = translate_segment(text_in, language_in, language_out)
-            
             f.write(f"{i}\n")
             f.write(f"{start} --> {end}\n")
             f.write(f"{text_out}\n\n")
@@ -100,8 +79,6 @@ def parse_srt(path):
             "end": end,
             "text": text
         })
-        print(f"Parseado: {start} --> {end} | {text}")
-        print(subtitles)
     return subtitles
 
 def subtitle_duration_ms(start, end):

@@ -2,10 +2,10 @@ import asyncio
 import os
 from pdb import main
 
-from legendas import parse_srt, transcrever_legendas
-from util import create_folders, get_timestamp
-from video import download_video, cut_clip, load_videos_from_json
-from audio import extract_audio, gerar_narracao, verify_audio
+from libs.legendas import parse_srt, transcrever_legendas
+from libs.util import create_folders, get_timestamp
+from libs.video import download_video, cut_clip, load_videos_from_json
+from libs.audio import extract_audio, gerar_narracao, verify_audio
 
 def recuperando_video_youtube(video, title):
     print("\nBaixando vídeo:", title)

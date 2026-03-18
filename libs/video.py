@@ -2,7 +2,7 @@ import subprocess
 import yt_dlp
 import json
 
-from util import get_timestamp
+from libs.util import get_timestamp
 
 # -------------------------
 # Videos

@@ -1,12 +1,12 @@
 import os
 import subprocess
 import edge_tts
-from legendas import subtitle_duration_ms
+from libs.legendas import subtitle_duration_ms
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-from util import get_timestamp, srt_time_to_ms
-from legendas import parse_srt
-from video import adjust_speed
+from libs.util import get_timestamp, srt_time_to_ms
+from libs.legendas import parse_srt
+from libs.video import adjust_speed
 # -------------------------
 # Voice
 # -------------------------

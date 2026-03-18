@@ -1,8 +1,8 @@
-from whisper_vulkan import driver
+from libs.gpu.whisper_vulkan import driver
 from deep_translator import GoogleTranslator
 import re
 
-from util import format_time, get_timestamp, srt_time_to_ms
+from libs.util import format_time, get_timestamp, srt_time_to_ms
 
 # -------------------------
 # Translator

@@ -18,7 +18,7 @@ def translate_segment(text="", language_in="en", language_out="pt"):
 # Transcrições
 # -------------------------
 
-model = whisper.load_model("base")
+model = whisper.load_model("medium")
 
 def transcribe(audio_file):
     result = model.transcribe(audio_file)

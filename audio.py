@@ -38,7 +38,10 @@ async def generate_tts(text, filename):
 async def verify_audio(subtitles):
     ret = True
     for i, sub in enumerate(subtitles):
-        target_duration = subtitle_duration_ms(sub["start"], sub["end"])
+        if i + 1 < len(subtitles):
+            target_duration = subtitle_duration_ms(sub["start"], subtitles[i+1]["start"])
+        else:
+            target_duration = subtitle_duration_ms(sub["start"], sub["end"])
         chunk, chunk_file = await save_chunk(sub["text"], i)
         speed = len(chunk) / target_duration
         if speed > 2.5:
@@ -84,9 +87,10 @@ def adjust_silence(sub, final_audio):
         duration = start_ms - len(final_audio)
         silence = AudioSegment.silent(duration)
         print(f"Adicionando silêncio de {len(silence)}ms para alinhar com o início do segmento\n")
-        final_audio += silence
+        return final_audio + silence
     else:
         print("\n")
+        return final_audio
 
 def remove_chunks(voice_file, adjusted_file):
     if os.path.exists(voice_file):
@@ -102,14 +106,17 @@ async def build_audio(subtitles, audio, output):
     final_audio = AudioSegment.silent(duration=0)
     #segments = transcribe(audio)
     for i, sub in enumerate(subtitles):
-        target_duration = subtitle_duration_ms(sub["start"], sub["end"])
+        if i + 1 < len(subtitles):
+            target_duration = subtitle_duration_ms(sub["start"], subtitles[i+1]["start"])
+        else:
+            target_duration = subtitle_duration_ms(sub["start"], sub["end"])
         # salvar cada pedaço de áudio em um arquivo temporário
         voice, voice_file = await save_chunk(sub["text"], i)
         # determinando velocidade de ajuste necessária para o pedaço de áudio se encaixar na duração da legenda
         speed = len(voice) / target_duration
         voice_adjusted, adjusted_file = adjust_chunk(sub["text"], i, speed, voice_file)
         # adicionando silêncio se necessário para alinhar o início do áudio com o início da legenda
-        adjust_silence(sub, final_audio)
+        final_audio = adjust_silence(sub, final_audio)
         if os.path.exists(adjusted_file):
             print(f"Adicionando ao áudio final: '{sub['text']}' | duração={len(voice_adjusted)}ms | início={sub['start']} | fim={sub['end']}\n")
             final_audio += voice_adjusted

@@ -1,0 +1,13 @@
+root ::= array
+
+array ::= "[" ws items? ws "]"
+
+items ::= string (ws "," ws string)*
+
+string ::= "\"" chars "\""
+
+chars ::= char*
+
+char ::= [^"\\] | "\\" ["\\/bfnrt]
+
+ws ::= [ \t\n\r]*

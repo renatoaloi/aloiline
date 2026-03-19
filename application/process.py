@@ -13,11 +13,11 @@ def recuperando_video_youtube(video, title):
     if (downloads):
         i = input("Vídeo já baixado, deseja refazer o download? (s/n): ")
         if i.lower() == "s":
-            video_file = download_video(video["url"])
+            video_file = download_video(video["url"], "")
         else:
             video_file = os.path.join("downloads", downloads[0])
     else:
-        video_file = download_video(video["url"])
+        video_file = download_video(video["url"], "")
     return video_file
 
 def cortar_video_processar_audio(clip, clip_file, video_file, audio_file):

@@ -93,6 +93,19 @@ async def main():
             print("------------------------------------------")
             print("Transcrição e geração de legendas finalizadas!")
             print('\n')
+        elif choice == "4":
+            print("Verificar legendas...")
+            print("------------------------------------------")
+            if (isLoaded()):
+                subtitle = video["subtitle"] 
+                clip = video["clip"]
+                subtitles = filesys.carregar_arquivo_json(subtitle["file"])
+                await aloiline.verificar_legendas_antes_continuar(clip["name"], subtitles)
+            else:
+                print("Arquivo de vídeo não encontrado! Baixe o vídeo primeiro...")
+            print("------------------------------------------")
+            print("Verificação de legendas finalizada!")
+            print('\n')
         elif choice == "5":
             print("Gerando narração...")
             print("------------------------------------------")

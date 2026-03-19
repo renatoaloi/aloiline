@@ -104,3 +104,13 @@ async def gerar_narracao(subtitles, clip_name):
     
     await audioLib.build_audio(subtitles, narration_file, voice_file, adjusted_file)
     return narration_file
+
+async def verificar_legendas_antes_continuar(clip_name, subtitles):
+    voice_file = f"audio/{get_timestamp()}_tmp_voice_verify_"
+    if (input(f"Deseja verificar a narração para '{clip_name}' antes de gerar? (s/n): ").lower() == "s"):
+        if (await audioLib.verify_audio(subtitles, voice_file)):
+            print("Áudio verificado com sucesso.")
+        else:
+            print("Problemas encontrados!")
+            return False
+    return True

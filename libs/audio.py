@@ -47,13 +47,42 @@ async def build_audio(subtitles, output, voice_f, adjusted_f):
         voice_adjusted = adjust_chunk(speed, voice_file, adjusted_file)
 
         if filesys.file_exists(adjusted_file):
-            final_audio += voice_adjusted
+            silent = AudioSegment.silent(duration=target_duration - len(voice_adjusted))
+            final_audio += voice_adjusted + silent
         else:
-            final_audio += voice
+            silent = AudioSegment.silent(duration=target_duration - len(voice))
+            final_audio += voice + silent
 
         remove_chunks(voice_file, adjusted_file)
 
     final_audio.export(output, format="wav")
+
+async def verify_audio(subtitles, chunk_f):
+    ret = True
+    for i, sub in enumerate(subtitles):
+        
+        timestamps = sub["timestamps"]
+        text_pt = sub["text_pt"]
+
+        chunk_file = f"{chunk_f}{i}.mp3"
+
+        target_duration = 0
+        if i + 1 < len(subtitles):
+            next_timestamp = subtitles[i + 1]["timestamps"]
+            target_duration = utilLib.srt_time_to_ms(next_timestamp["from"]) - utilLib.srt_time_to_ms(timestamps["from"])
+        else:
+            target_duration = utilLib.srt_time_to_ms(timestamps["to"]) - utilLib.srt_time_to_ms(timestamps["from"])
+
+        if target_duration <= 0:
+            target_duration = 1 # Define 1ms como mínimo para evitar erro matemático
+        
+        chunk = await save_chunk(text_pt, chunk_file)
+        speed = len(chunk) / target_duration
+        if speed > 2.5:
+            print(f"Segmento {i+1}: texto='{text_pt}' | duração alvo={target_duration}ms | duração voz={len(chunk)}ms | velocidade de ajuste necessária: {speed:.2f}x")
+            ret = False
+        remove_chunks(chunk_file, "")
+    return ret
 
 async def save_chunk(chunk, voice_file):
     await generate_tts(chunk, voice_file)

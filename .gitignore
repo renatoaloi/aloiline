@@ -1,6 +1,7 @@
 /audio
 /clips
 /downloads
+/release
 /subtitles
 /videos
 /transcripts
@@ -8,3 +9,4 @@
 /venv_11
 *.pyc
 **/__pycache__
+temp_**

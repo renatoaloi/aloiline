@@ -62,6 +62,7 @@ pip install pydub openai-whisper yt-dlp deep-translator edge-tts audioop-lts tor
 >
 > ```bash
 > pip install pydub openai-whisper yt-dlp deep-translator edge-tts torch torchvision torchaudio
+> pip install transformers sentencepiece pysrt torch-directml
 > ```
 
 # Utilização

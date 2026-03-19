@@ -32,7 +32,11 @@ class WhisperVulkan:
             "-m", self.model_path,
             "-f", ready_audio,
             "-dev", "0",
-            "-oj"
+            "-oj",
+            "-osrt",
+            "-sow",
+            "-sns",
+            "-t", "8"
         ]
 
         try:
@@ -55,5 +59,7 @@ class WhisperVulkan:
 
 # Configuração (ajuste se necessário)
 EXE_PATH = r"C:\dev\aloitech\whisper.cpp\build\bin\Release\whisper-cli.exe"
-MODEL_PATH = r"C:\dev\aloitech\whisper.cpp\models\ggml-medium.bin"
+#MODEL_PATH = r"C:\dev\aloitech\whisper.cpp\models\ggml-medium.bin"
+MODEL_PATH = r"C:\dev\aloitech\whisper.cpp\models\ggml-base.en.bin"
+
 driver = WhisperVulkan(EXE_PATH, MODEL_PATH)

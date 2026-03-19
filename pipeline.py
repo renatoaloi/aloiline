@@ -24,8 +24,12 @@ async def main():
         "transcript": None,
         "narracao": None
     }
-    def isLoaded():
+    def isVideoLoaded():
         return video["title"] and video["code"] and video["url"] and video["clip"]
+    def isAudioLoaded():
+        return video["audio"]
+    def isSubtitleLoaded():
+        return video["subtitle"]
     
     # Menu de opções
     while(True):
@@ -69,7 +73,7 @@ async def main():
         elif choice == "2":
             print("Recortando clipe e audio...")
             print("------------------------------------------")
-            if (isLoaded()):
+            if (isVideoLoaded()):
                 clip = video["clip"]
                 clip_file, audio_file = aloiline.processar_clip_e_audio(clip["start"], clip["end"], clip["name"], video["file"])
                 clip["file"] = clip_file
@@ -82,34 +86,34 @@ async def main():
         elif choice == "3":
             print("Transcrevendo audio e gerando legendas...")
             print("------------------------------------------")
-            if (isLoaded()):
+            if (isVideoLoaded() and isAudioLoaded()):
                 clip = video["clip"]
                 audio = video["audio"]
                 transcript_file, srt_file = aloiline.transcrever_audio_gerar_legendas(clip["name"], audio["file"])
                 video["transcript"] = { "file": transcript_file }
                 video["subtitle"] = { "file": srt_file }
             else:
-                print("Arquivo de vídeo não encontrado! Baixe o vídeo primeiro...")
+                print("Arquivos de vídeo/áudio não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")
             print("Transcrição e geração de legendas finalizadas!")
             print('\n')
         elif choice == "4":
             print("Verificar legendas...")
             print("------------------------------------------")
-            if (isLoaded()):
+            if (isVideoLoaded() and isAudioLoaded() and isSubtitleLoaded()):
                 subtitle = video["subtitle"] 
                 clip = video["clip"]
                 subtitles = filesys.carregar_arquivo_json(subtitle["file"])
                 await aloiline.verificar_legendas_antes_continuar(clip["name"], subtitles)
             else:
-                print("Arquivo de vídeo não encontrado! Baixe o vídeo primeiro...")
+                print("Arquivos de vídeo/áudio/legendas não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")
             print("Verificação de legendas finalizada!")
             print('\n')
         elif choice == "5":
             print("Gerando narração...")
             print("------------------------------------------")
-            if (isLoaded()):
+            if (isVideoLoaded() and isAudioLoaded() and isSubtitleLoaded()):
                 subtitle = video["subtitle"] 
                 clip = video["clip"]
                 subtitles = filesys.carregar_arquivo_json(subtitle["file"])
@@ -123,20 +127,19 @@ async def main():
         elif choice == "6":
             print("Apresentando dados vídeo...")
             print("------------------------------------------")
-            if (isLoaded()):
-                print(video)
-            else:
-                print("Arquivo de vídeo não encontrado! Baixe o vídeo primeiro...")
+            print(video)
             print("------------------------------------------")
             print("Apresentação de dados do vídeo finalizada!")
             print('\n')
         elif choice == "7":
             print("Salvando projeto de vídeo...")
             print("------------------------------------------")
-            if (isLoaded()):
-                print(video)
+            if (isVideoLoaded() and isAudioLoaded() and isSubtitleLoaded()):
+                clip = video["clip"]
+                narration = video["narracao"]
+                aloiline.salvar_projeto_na_pasta_release(video["title"], clip["file"], narration["file"])
             else:
-                print("Arquivo de vídeo não encontrado! Baixe o vídeo primeiro...")
+                print("Arquivos de vídeo/áudio/legendas não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")
             print("Salvamento do projeto de vídeo finalizada!")
             print('\n')

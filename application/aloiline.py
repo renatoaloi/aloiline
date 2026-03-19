@@ -61,14 +61,14 @@ def transcrever_audio_gerar_legendas(clip_name, audio_file):
         i = input(f"Transcrição para '{clip_name}' já existe, deseja reprocessar? (s/n): ")
         if i.lower() != "s":
             print(f"Carregando transcrição {transcript[0]}, aguarde...")
-            segments = fileLib.carregar_arquivo_json(fileLib.combinar_caminhos("transcripts", transcript[0]))
-            srt_json = fileLib.combinar_caminhos("transcripts", transcript[0])
+            fileLib.carregar_arquivo_json(fileLib.combinar_caminhos("transcripts", transcript[0]))
+            transcript_file = fileLib.combinar_caminhos("transcripts", transcript[0])
         else:
             print("Transcrevendo, aguarde...")
-            segments = legendas.transcrever_legendas(audio_file, transcript_file)
+            legendas.transcrever_legendas(audio_file, transcript_file)
     else:
         print("Transcrevendo, aguarde...")
-        segments = legendas.transcrever_legendas(audio_file, transcript_file)
+        legendas.transcrever_legendas(audio_file, transcript_file)
 
     # check if subtitle already exists
     subtitles = [f for f in fileLib.listar_diretorio("subtitles") if clip_name in f]
@@ -78,31 +78,30 @@ def transcrever_audio_gerar_legendas(clip_name, audio_file):
             srt_json = fileLib.combinar_caminhos("subtitles", subtitles[0])
         else:
             print("Traduzindo legendas, aguarde...")
-            segments_out = legendas.traduzir_legendas_em_lote(segments)
-            print("Gerando arquivo de legendas...")
-            srt_json = legendas.salvar_arquivo_json_legendas(segments_out, srt_json)
+            legendas.traduzir_legendas_em_lote(transcript_file, srt_json)
+            #print("Gerando arquivo de legendas...")
+            #srt_json = legendas.salvar_arquivo_json_legendas(segments_out, srt_json)
     else:
         print("Traduzindo legendas, aguarde...")
-        segments_out = legendas.traduzir_legendas_em_lote(segments)
-        print("Gerando arquivo de legendas...")
-        srt_json = legendas.salvar_arquivo_json_legendas(segments_out, srt_json)
+        legendas.traduzir_legendas_em_lote(transcript_file, srt_json)
+        #print("Gerando arquivo de legendas...")
+        #srt_json = legendas.salvar_arquivo_json_legendas(segments_out, srt_json)
 
     return transcript_file, srt_json
 
 async def gerar_narracao(subtitles, clip_name):
-    if (input(f"Deseja gerar narração para '{clip_name}'? (s/n): ").lower() != "s"):
-        return False
     print("Gerando narração em português, aguarde...")
     narration_file = f"audio/{get_timestamp()}_{clip_name}_narration.wav"
     voice_file = f"audio/{get_timestamp()}_tmp_voice_"
     adjusted_file = f"audio/{get_timestamp()}_tmp_voice_adjusted_"
     narracoes = [f for f in fileLib.listar_diretorio("audio") if f"{clip_name}_narration" in f]
     if narracoes:
+        narration_file = fileLib.combinar_caminhos("audio", narracoes[0])
         i = input(f"Narração para '{clip_name}' já existe, deseja refazer? (s/n): ")
-        if i.lower() != "s":
-            narration_file = fileLib.combinar_caminhos("audio", narracoes[0])
-    
-    await audioLib.build_audio(subtitles, narration_file, voice_file, adjusted_file)
+        if i.lower() == "s":
+            await audioLib.build_audio(subtitles, narration_file, voice_file, adjusted_file)
+    else:
+        await audioLib.build_audio(subtitles, narration_file, voice_file, adjusted_file)
     return narration_file
 
 async def verificar_legendas_antes_continuar(clip_name, subtitles):
@@ -114,3 +113,18 @@ async def verificar_legendas_antes_continuar(clip_name, subtitles):
             print("Problemas encontrados!")
             return False
     return True
+
+def salvar_projeto_na_pasta_release(video_title, clip_file, narration_file):
+    print(f"titulo do video: {video_title} | clipe: {clip_file} | narração: {narration_file}")
+    print(f"Criando folder {video_title} ...")
+    fileLib.create_folder(fileLib.combinar_caminhos("release", video_title))
+
+    clip_filename = clip_file.split("\\")[-1]
+    clips_path = fileLib.combinar_caminhos("release", video_title)
+    print(f"Copiando arquivo {clip_file} para {clips_path}...")
+    fileLib.copy_file(clip_file, fileLib.combinar_caminhos(clips_path, clip_filename))
+
+    narration_filename = narration_file.split("\\")[-1]
+    narration_path = fileLib.combinar_caminhos("release", video_title)
+    print(f"Copiando arquivo {narration_file} para {narration_path}...")
+    fileLib.copy_file(narration_file, fileLib.combinar_caminhos(narration_path, narration_filename))

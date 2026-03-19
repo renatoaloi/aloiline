@@ -9,7 +9,7 @@ def create_folders():
 def recuperar_arquivo_local(path, title):
     return os.path.join(path, title)
 
-def carregar_video_do_arquivo_json(file):
+def carregar_arquivo_json(file):
     with open(file, "r", encoding="utf-8") as f:
         return json.load(f)
     
@@ -22,3 +22,9 @@ def listar_diretorio(dir):
 
 def combinar_caminhos(path, file):
     return os.path.join(path, file)
+
+def file_exists(file):
+    return os.path.exists(file)
+
+def remove_file(file):
+    os.remove(file)

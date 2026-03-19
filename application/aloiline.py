@@ -54,21 +54,53 @@ def transcrever_audio_gerar_legendas(clip_name, audio_file):
     transcript_file = f"transcripts/{get_timestamp()}_{clip_name}.json"
     srt_file = f"subtitles/{get_timestamp()}_{clip_name}.srt"
     srt_json = f"subtitles/{get_timestamp()}_{clip_name}.json"
+    
+    # check if transcript already exists
+    transcript = [f for f in fileLib.listar_diretorio("transcripts") if clip_name in f]
+    if (transcript):
+        i = input(f"Transcrição para '{clip_name}' já existe, deseja reprocessar? (s/n): ")
+        if i.lower() != "s":
+            print(f"Carregando transcrição {transcript[0]}, aguarde...")
+            segments = fileLib.carregar_arquivo_json(fileLib.combinar_caminhos("transcripts", transcript[0]))
+            srt_json = fileLib.combinar_caminhos("transcripts", transcript[0])
+        else:
+            print("Transcrevendo, aguarde...")
+            segments = legendas.transcrever_legendas(audio_file, transcript_file)
+    else:
+        print("Transcrevendo, aguarde...")
+        segments = legendas.transcrever_legendas(audio_file, transcript_file)
 
+    # check if subtitle already exists
     subtitles = [f for f in fileLib.listar_diretorio("subtitles") if clip_name in f]
     if (subtitles):
         i = input(f"Legenda para '{clip_name}' já existe, deseja reprocessar? (s/n): ")
         if i.lower() != "s":
-            return ""
+            srt_json = fileLib.combinar_caminhos("subtitles", subtitles[0])
+        else:
+            print("Traduzindo legendas, aguarde...")
+            segments_out = legendas.traduzir_legendas_em_lote(segments)
+            print("Gerando arquivo de legendas...")
+            srt_json = legendas.salvar_arquivo_json_legendas(segments_out, srt_json)
+    else:
+        print("Traduzindo legendas, aguarde...")
+        segments_out = legendas.traduzir_legendas_em_lote(segments)
+        print("Gerando arquivo de legendas...")
+        srt_json = legendas.salvar_arquivo_json_legendas(segments_out, srt_json)
 
-    print("Transcrevendo, aguarde...")
-    segments = legendas.transcrever_legendas(audio_file, transcript_file)
+    return transcript_file, srt_json
 
-    print("Traduzindo legendas, aguarde...")
-    segments_out = legendas.traduzir_legendas_em_lote(segments)
-
-    print("Gerando arquivo de legendas...")
-    srt_file = legendas.salvar_arquivo_json_legendas(segments_out, srt_json)
-    #file_str = legendas.salvar_arquivo_srt_legendas(segments, srt_file)
-
-    return transcript_file, srt_file
+async def gerar_narracao(subtitles, clip_name):
+    if (input(f"Deseja gerar narração para '{clip_name}'? (s/n): ").lower() != "s"):
+        return False
+    print("Gerando narração em português, aguarde...")
+    narration_file = f"audio/{get_timestamp()}_{clip_name}_narration.wav"
+    voice_file = f"audio/{get_timestamp()}_tmp_voice_"
+    adjusted_file = f"audio/{get_timestamp()}_tmp_voice_adjusted_"
+    narracoes = [f for f in fileLib.listar_diretorio("audio") if f"{clip_name}_narration" in f]
+    if narracoes:
+        i = input(f"Narração para '{clip_name}' já existe, deseja refazer? (s/n): ")
+        if i.lower() != "s":
+            narration_file = fileLib.combinar_caminhos("audio", narracoes[0])
+    
+    await audioLib.build_audio(subtitles, narration_file, voice_file, adjusted_file)
+    return narration_file

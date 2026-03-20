@@ -114,17 +114,34 @@ async def verificar_legendas_antes_continuar(clip_name, subtitles):
             return False
     return True
 
-def salvar_projeto_na_pasta_release(video_title, clip_file, narration_file):
+def salvar_projeto_na_pasta_release(video_title, clip_file, narration_file, nome_json, subtitle_file):
     print(f"titulo do video: {video_title} | clipe: {clip_file} | narração: {narration_file}")
+
+    # criando pasta do projeto
     print(f"Criando folder {video_title} ...")
     fileLib.create_folder(fileLib.combinar_caminhos("release", video_title))
 
-    clip_filename = clip_file.split("\\")[-1]
+    # copiando arquivo json de configuração
+    config_path = fileLib.combinar_caminhos("release", nome_json)
+    fileLib.copy_file(nome_json, config_path)
+    
+    # copiando clipe
+    clip_filename = clip_file.replace("/", "\\")
+    clip_filename = clip_filename.split("\\")[-1]
     clips_path = fileLib.combinar_caminhos("release", video_title)
     print(f"Copiando arquivo {clip_file} para {clips_path}...")
     fileLib.copy_file(clip_file, fileLib.combinar_caminhos(clips_path, clip_filename))
 
-    narration_filename = narration_file.split("\\")[-1]
+    # copiando narração
+    narration_filename = narration_file.replace("/", "\\")
+    narration_filename = narration_filename.split("\\")[-1]
     narration_path = fileLib.combinar_caminhos("release", video_title)
     print(f"Copiando arquivo {narration_file} para {narration_path}...")
     fileLib.copy_file(narration_file, fileLib.combinar_caminhos(narration_path, narration_filename))
+
+    # copiando legendas
+    legendas_filename = subtitle_file.replace("/", "\\")
+    legendas_filename = legendas_filename.split("\\")[-1]
+    legendas_path = fileLib.combinar_caminhos("release", video_title)
+    print(f"Copiando arquivo {subtitle_file} para {legendas_path}...")
+    fileLib.copy_file(subtitle_file, fileLib.combinar_caminhos(legendas_path, legendas_filename))

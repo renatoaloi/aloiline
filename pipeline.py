@@ -22,7 +22,8 @@ async def main():
         "audio": None, 
         "subtitle": None, 
         "transcript": None,
-        "narracao": None
+        "narracao": None,
+        "json": None
     }
     def isVideoLoaded():
         return video["title"] and video["code"] and video["url"] and video["clip"]
@@ -30,6 +31,8 @@ async def main():
         return video["audio"]
     def isSubtitleLoaded():
         return video["subtitle"]
+    def isJsonLoaded():
+        return video["json"]
     
     # Menu de opções
     while(True):
@@ -57,6 +60,7 @@ async def main():
             nome_json = input("Digite o nome do arquivo (videoclipe.json): ")
             if not nome_json:
                 nome_json = nome_json_default
+            video["json"] = nome_json
 
             video_json = filesys.carregar_arquivo_json(nome_json)
 
@@ -134,10 +138,12 @@ async def main():
         elif choice == "7":
             print("Salvando projeto de vídeo...")
             print("------------------------------------------")
-            if (isVideoLoaded() and isAudioLoaded() and isSubtitleLoaded()):
+            if (isVideoLoaded() and isAudioLoaded() and isSubtitleLoaded() and isJsonLoaded()):
                 clip = video["clip"]
                 narration = video["narracao"]
-                aloiline.salvar_projeto_na_pasta_release(video["title"], clip["file"], narration["file"])
+                nome_json = video["json"]
+                subtitle = video["subtitle"]
+                aloiline.salvar_projeto_na_pasta_release(video["title"], clip["file"], narration["file"], nome_json, subtitle["file"])
             else:
                 print("Arquivos de vídeo/áudio/legendas não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")

@@ -18,7 +18,7 @@ class WhisperTranslator:
             use_safetensors=True
         ).to(self.device)
     
-    def translate(self, input_file, output_file):
+    def translate(self, input_file, output_file, srt_file):
         with open(input_file, "r", encoding="utf-8") as f:
             data = json.load(f)
         buffer = []
@@ -40,8 +40,21 @@ class WhisperTranslator:
                 data[idx]["text"] = t
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
+        self._json_to_srt(data, srt_file)
         print("✅ Tradução JSON concluída!")
 
+    def json_to_srt(self, data, srt_file):
+        srt_lines = []
+        for i, item in enumerate(data, start=1):
+            start = item["timestamps"]["from"]
+            end = item["timestamps"]["to"]
+            text = item["text"]
+            srt_lines.append(f"{i}")
+            srt_lines.append(f"{start} --> {end}")
+            srt_lines.append(text)
+            srt_lines.append("")  # linha em branco
+        with open(srt_file, "w", encoding="utf-8") as f:
+            f.write("\n".join(srt_lines))
 
     def _translate_batch(self, text_list):
         inputs = self.tokenizer(

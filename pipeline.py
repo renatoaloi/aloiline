@@ -49,6 +49,7 @@ async def main():
         print("5. Gerar Narração")
         print("6. Mostrar dados do video")
         print("7. Salvar projeto")
+        print("8. Gerar arquivo SRT")
         print("-------------------------------")
         print("9. Sair")
         print("===============================")
@@ -93,9 +94,9 @@ async def main():
             if (isVideoLoaded() and isAudioLoaded()):
                 clip = video["clip"]
                 audio = video["audio"]
-                transcript_file, srt_file = aloiline.transcrever_audio_gerar_legendas(clip["name"], audio["file"])
+                transcript_file, json_file, srt_file = aloiline.transcrever_audio_gerar_legendas(clip["name"], audio["file"])
                 video["transcript"] = { "file": transcript_file }
-                video["subtitle"] = { "file": srt_file }
+                video["subtitle"] = { "file": json_file, "srt_file": srt_file }
             else:
                 print("Arquivos de vídeo/áudio não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")
@@ -143,11 +144,19 @@ async def main():
                 narration = video["narracao"]
                 nome_json = video["json"]
                 subtitle = video["subtitle"]
-                aloiline.salvar_projeto_na_pasta_release(video["title"], clip["file"], narration["file"], nome_json, subtitle["file"])
+                aloiline.salvar_projeto_na_pasta_release(video["title"], clip["file"], narration["file"], nome_json, subtitle["file"], subtitle["srt_file"])
             else:
                 print("Arquivos de vídeo/áudio/legendas não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")
             print("Salvamento do projeto de vídeo finalizada!")
+            print('\n')
+        elif choice == "8":
+            print("Gerando arquivo SRT novamente...")
+            print("------------------------------------------")
+            subtitle = video["subtitle"]
+            aloiline.gerar_srt_novamente(subtitle["file"], subtitle["srt_file"])
+            print("------------------------------------------")
+            print("Geração do arquivo SRT finalizada!")
             print('\n')
         elif choice == "9":
             print("Saindo...")

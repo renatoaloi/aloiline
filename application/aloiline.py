@@ -69,7 +69,7 @@ def transcrever_audio_gerar_legendas(clip_name, audio_file):
     transcript_file = f"transcripts/{get_timestamp()}_{clip_name}.json"
     srt_file = f"subtitles/{get_timestamp()}_{clip_name}.srt"
     srt_json = f"subtitles/{get_timestamp()}_{clip_name}.json"
-    tmp_file = f"transcripts/{get_timestamp()}_{clip_name}_"
+    tmp_file = f"temp/{get_timestamp()}_{clip_name}_"
     
     # check if transcript already exists
     transcript = [f for f in fileLib.listar_diretorio("transcripts") if clip_name in f]
@@ -106,8 +106,8 @@ def transcrever_audio_gerar_legendas(clip_name, audio_file):
 async def gerar_narracao(subtitles, clip_name):
     print("Gerando narração em português, aguarde...")
     narration_file = f"audio/{get_timestamp()}_{clip_name}_narration.wav"
-    voice_file = f"audio/{get_timestamp()}_tmp_voice_"
-    adjusted_file = f"audio/{get_timestamp()}_tmp_voice_adjusted_"
+    voice_file = f"temp/{get_timestamp()}_tmp_voice_"
+    adjusted_file = f"temp/{get_timestamp()}_tmp_voice_adjusted_"
     narracoes = [f for f in fileLib.listar_diretorio("audio") if f"{clip_name}_narration" in f]
     if narracoes:
         narration_file = fileLib.combinar_caminhos("audio", narracoes[0])

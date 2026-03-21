@@ -27,6 +27,7 @@ def filter_segments(segments, min_duration):
 
 def refine_start(frames, start_frame, end_frame):
     for i in range(start_frame, end_frame):
+        #print(f"Refined frame[{i}]: {frames[i]}")
         rms = audioop.rms(frames[i], 2)
         if rms > 1200:
             return i
@@ -156,6 +157,7 @@ async def build_audio(subtitles, output, voice_f, adjusted_f):
         #remove_chunks(voice_file, adjusted_file)
 
     final_audio.export(output, format="wav")
+    filesys.limpar_temp_folder()
 
 async def verify_audio(subtitles, chunk_f):
     ret = True
@@ -220,9 +222,8 @@ def remove_chunks(voice_file, adjusted_file):
         filesys.remove_file(adjusted_file)
 
 def get_audio_part(audio_file, start, end, file_out):
-    #audio = AudioSegment.from_wav(audio_file)
     audio = AudioSegment.from_file(audio_file)
-    cut_segment = audio[start*1000:end*1000]
+    cut_segment = audio[start:end]
     print(f"start: {start} | end: {end} | audio len: {len(audio)} | cut_audio len: {len(cut_segment)}")
     cut_segment = cut_segment.set_frame_rate(16000).set_channels(1).set_sample_width(2)
     cut_segment.export(file_out, format="wav")

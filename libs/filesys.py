@@ -1,9 +1,10 @@
+from pathlib import Path
 import os
 import json
 import shutil 
 
 def create_folders(parent_folder = ""):
-    folders = ["downloads", "clips", "audio", "transcripts", "subtitles", "release"]
+    folders = ["downloads", "clips", "audio", "transcripts", "subtitles", "release", "temp"]
     for f in folders:
         path_combined = combinar_caminhos(parent_folder, f)
         os.makedirs(path_combined, exist_ok=True)
@@ -46,3 +47,11 @@ def remove_file(file):
 
 def copy_file(_from, _to):
     shutil.copyfile(_from, _to)
+
+def limpar_temp_folder():
+    app_path = Path(__file__).resolve().parent.parent
+    print(f"Application directory: {app_path}")
+    p = Path(os.path.join(app_path, "temp"))
+    for entry in p.iterdir():
+        os.remove(os.path.join(str(p), entry.name))
+    

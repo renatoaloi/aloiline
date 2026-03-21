@@ -81,8 +81,6 @@ class WhisperTranslator:
 MODEL_NAME = "facebook/nllb-200-distilled-600M"
 SRC_LANG = "eng_Latn"
 TGT_LANG = "por_Latn"
-INPUT_FILE = "transcripts/20260319_154506_cachorro_escada.json"
-OUTPUT_FILE = "output_ptbr.json"
 BATCH_SIZE = 16
 
 driver = WhisperTranslator(MODEL_NAME, BATCH_SIZE, TGT_LANG)

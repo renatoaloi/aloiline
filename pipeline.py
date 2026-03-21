@@ -4,10 +4,6 @@ from pdb import main
 from libs import filesys
 from application import aloiline
 
-# -------------------------
-# pipeline principal
-# -------------------------
-
 async def main():
     # Criar pastas necessárias
     filesys.create_folders()
@@ -46,12 +42,12 @@ async def main():
         print("1. Importar Vídeo do YouTube")
         print("2. Recortar Clipe e Audio")
         print("3. Transcrever e Gerar Legendas")
-        print(" 3.1 Gerar Timestamp das Legendas")
-        print("4. Verificar Legendas")
+        print(" 3.1. Gerar Timestamp das Legendas")
+        print(" 3.2. Verificar Legendas")
+        print(" 3.3. Gerar Arquivo SRT")
         print("5. Gerar Narração")
         print("6. Mostrar Dados do Video")
         print("7. Salvar Projeto")
-        print("8. Gerar Arquivo SRT")
         print("-------------------------------")
         print("9. Sair")
         print("===============================")
@@ -118,7 +114,7 @@ async def main():
             print("------------------------------------------")
             print("Cálculo de faixas de silêncio finalizadas!")
             print('\n')
-        elif choice == "4":
+        elif choice == "3.2":
             print("Verificar legendas...")
             print("------------------------------------------")
             if (isVideoLoaded() and isAudioLoaded() and isSubtitleLoaded()):
@@ -130,6 +126,14 @@ async def main():
                 print("Arquivos de vídeo/áudio/legendas não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")
             print("Verificação de legendas finalizada!")
+            print('\n')
+        elif choice == "3.3":
+            print("Gerando arquivo SRT novamente...")
+            print("------------------------------------------")
+            subtitle = video["subtitle"]
+            aloiline.gerar_srt_novamente(subtitle["file"], subtitle["srt_file"])
+            print("------------------------------------------")
+            print("Geração do arquivo SRT finalizada!")
             print('\n')
         elif choice == "5":
             print("Gerando narração...")
@@ -180,14 +184,6 @@ async def main():
                 print("Arquivos de vídeo/áudio/legendas não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")
             print("Salvamento do projeto de vídeo finalizada!")
-            print('\n')
-        elif choice == "8":
-            print("Gerando arquivo SRT novamente...")
-            print("------------------------------------------")
-            subtitle = video["subtitle"]
-            aloiline.gerar_srt_novamente(subtitle["file"], subtitle["srt_file"])
-            print("------------------------------------------")
-            print("Geração do arquivo SRT finalizada!")
             print('\n')
         elif choice == "9":
             print("Saindo...")

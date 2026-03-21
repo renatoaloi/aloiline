@@ -8,7 +8,7 @@ class WhisperVulkan:
         self.exe_path = exe_path
         self.model_path = model_path
 
-    def _prepare_audio(self, input_file):
+    def prepare_audio(self, input_file):
         """Converte qualquer áudio para WAV 16kHz Mono (o padrão do whisper.cpp)"""
         base_name = os.path.basename(input_file)
         temp_wav = f"temp_{base_name}.wav"
@@ -23,8 +23,9 @@ class WhisperVulkan:
         return temp_wav
 
     def transcribe(self, audio_file):
-        ready_audio = self._prepare_audio(audio_file)
+        ready_audio = self.prepare_audio(audio_file)
         json_output = f"{ready_audio}.json"
+        srt_output = f"{ready_audio}.srt"
 
         # Usando as flags que funcionaram no seu binário novo
         command = [
@@ -50,6 +51,7 @@ class WhisperVulkan:
                 # SÊNIOR TIP: Deletar temporários apenas após o sucesso
                 os.remove(json_output)
                 os.remove(ready_audio)
+                os.remove(srt_output)
                 
                 return data.get("transcription", [])
         except subprocess.CalledProcessError as e:

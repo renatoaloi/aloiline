@@ -1,10 +1,25 @@
 import datetime
 
-from libs import filesys as fileLib, video as videoLib, audio as audioLib, legendas
+from libs import filesys as fileLib
+from libs import video as videoLib
+from libs import audio as audioLib, legendas
+from libs import util as utilLib
 
 agora = datetime.datetime.now()
 def get_timestamp():
     return agora.strftime("%Y%m%d_%H%M%S")
+
+def extrair_trechos_narracao(audio_file, clip_name):
+    # silence_file = f"transcripts/{get_timestamp()}_{clip_name}_silence_tracks.json"
+    # print(f"Calculando faixas de silêncio do arquivo {audio_file}, aguarde...")
+    # silence_tracks = audioLib.detect_silence_audio(audio_file)
+    # print("Salvando faixas de silêncio...")
+    # fileLib.salvar_arquivo_json(silence_file, silence_tracks)
+    # return silence_file
+    segments = legendas.gerar_timestamp_legendas(audio_file)
+    print("\n🎧 Segmentos de narração detectados:\n")
+    for start, end in segments:
+        print(f"{utilLib.format_time(start)} → {utilLib.format_time(end)}")
 
 def recuperar_video(video_url, title, pesquisa):
     downloads = [f for f in fileLib.listar_diretorio("downloads") if pesquisa in f]
@@ -54,6 +69,7 @@ def transcrever_audio_gerar_legendas(clip_name, audio_file):
     transcript_file = f"transcripts/{get_timestamp()}_{clip_name}.json"
     srt_file = f"subtitles/{get_timestamp()}_{clip_name}.srt"
     srt_json = f"subtitles/{get_timestamp()}_{clip_name}.json"
+    tmp_file = f"transcripts/{get_timestamp()}_{clip_name}_"
     
     # check if transcript already exists
     transcript = [f for f in fileLib.listar_diretorio("transcripts") if clip_name in f]
@@ -65,10 +81,10 @@ def transcrever_audio_gerar_legendas(clip_name, audio_file):
             transcript_file = fileLib.combinar_caminhos("transcripts", transcript[0])
         else:
             print("Transcrevendo, aguarde...")
-            legendas.transcrever_legendas(audio_file, transcript_file)
+            legendas.transcrever_legendas(audio_file, transcript_file, tmp_file)
     else:
         print("Transcrevendo, aguarde...")
-        legendas.transcrever_legendas(audio_file, transcript_file)
+        legendas.transcrever_legendas(audio_file, transcript_file, tmp_file)
 
     # check if subtitle already exists
     subtitles = [f for f in fileLib.listar_diretorio("subtitles") if clip_name in f and ".json" in f]

@@ -2,8 +2,6 @@ import json
 import torch_directml
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-from libs import util as utilLib
-
 class WhisperTranslator:
     def __init__(self, model_name, batch_size, tgt_lang):
         self.model_name = model_name
@@ -40,7 +38,7 @@ class WhisperTranslator:
                 data[idx]["text"] = t
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
-        self._json_to_srt(data, srt_file)
+        self.json_to_srt(data, srt_file)
         print("✅ Tradução JSON concluída!")
 
     def json_to_srt(self, data, srt_file):

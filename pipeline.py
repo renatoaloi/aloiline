@@ -23,7 +23,8 @@ async def main():
         "subtitle": None, 
         "transcript": None,
         "narracao": None,
-        "json": None
+        "json": None,
+        "silence": None
     }
     def isVideoLoaded():
         return video["title"] and video["code"] and video["url"] and video["clip"]
@@ -42,14 +43,15 @@ async def main():
         print("===============================")
         print("Escolha uma opção:")
         print("-------------------------------")
-        print("1. Importar vídeo do YouTube")
+        print("1. Importar Vídeo do YouTube")
         print("2. Recortar Clipe e Audio")
         print("3. Transcrever e Gerar Legendas")
+        print(" 3.1 Gerar Timestamp das Legendas")
         print("4. Verificar Legendas")
         print("5. Gerar Narração")
-        print("6. Mostrar dados do video")
-        print("7. Salvar projeto")
-        print("8. Gerar arquivo SRT")
+        print("6. Mostrar Dados do Video")
+        print("7. Salvar Projeto")
+        print("8. Gerar Arquivo SRT")
         print("-------------------------------")
         print("9. Sair")
         print("===============================")
@@ -94,13 +96,27 @@ async def main():
             if (isVideoLoaded() and isAudioLoaded()):
                 clip = video["clip"]
                 audio = video["audio"]
-                transcript_file, json_file, srt_file = aloiline.transcrever_audio_gerar_legendas(clip["name"], audio["file"])
+                transcript_file, json_file, srt_file = \
+                    aloiline.transcrever_audio_gerar_legendas(clip["name"], audio["file"])
                 video["transcript"] = { "file": transcript_file }
                 video["subtitle"] = { "file": json_file, "srt_file": srt_file }
             else:
                 print("Arquivos de vídeo/áudio não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")
             print("Transcrição e geração de legendas finalizadas!")
+            print('\n')
+        elif choice == "3.1":
+            print("Calculando faixas de silêncio...")
+            print("------------------------------------------")
+            if (isVideoLoaded() and isAudioLoaded()):
+                audio = video["audio"]
+                clip = video["clip"]
+                silence_file = aloiline.extrair_trechos_narracao(audio["file"], clip["name"])
+                video["silence"] = { "file": silence_file }
+            else:
+                print("Arquivos de vídeo/áudio não encontrados! Execute as etapas anteriores, antes de continuar...")
+            print("------------------------------------------")
+            print("Cálculo de faixas de silêncio finalizadas!")
             print('\n')
         elif choice == "4":
             print("Verificar legendas...")
@@ -133,6 +149,21 @@ async def main():
             print("Apresentando dados vídeo...")
             print("------------------------------------------")
             print(video)
+            if isVideoLoaded() and isAudioLoaded() and isSubtitleLoaded() and isJsonLoaded():
+                print(f"[video][title]: {video['title']}")
+                print(f"[video][code]: {video['code']}")
+                print(f"[video][url]: {video['url']}")
+                print(f"[video][file]: {video['file']}")
+                print(f"[video][clipe][name]: {video['clip']['name']}")
+                print(f"[video][clipe][start]: {video['clip']['start']}")
+                print(f"[video][clipe][end]: {video['clip']['end']}")
+                print(f"[video][clipe][file]: {video['clip']['file']}")
+                print(f"[video][audio][file]: {video['audio']['file']}")
+                print(f"[video][subtitle]:{video['subtitle']}")
+                print(f"[video][transcript]:{video['transcript']}")
+                print(f"[video][narracao]:{video['narracao']}")
+                print(f"[video][json]:{video['json']}")
+                print(f"[video][silence]:{video['silence']}")
             print("------------------------------------------")
             print("Apresentação de dados do vídeo finalizada!")
             print('\n')

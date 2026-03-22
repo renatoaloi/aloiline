@@ -50,7 +50,6 @@ def copy_file(_from, _to):
 
 def limpar_temp_folder():
     app_path = Path(__file__).resolve().parent.parent
-    print(f"Application directory: {app_path}")
     p = Path(os.path.join(app_path, "temp"))
     for entry in p.iterdir():
         os.remove(os.path.join(str(p), entry.name))

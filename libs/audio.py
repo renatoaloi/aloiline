@@ -6,6 +6,8 @@ import collections
 import audioop
 
 from pydub import AudioSegment
+from pydub.silence import detect_silence
+from pydub.effects import speedup
 from libs import util as utilLib, filesys
 
 def merge_segments(segments, max_gap):
@@ -98,40 +100,95 @@ def calculate_actual_timestamps(subtitle):
     actual_timestamps = subtitle["offsets"]
     actual_from = actual_timestamps["from"]
     actual_to = actual_timestamps["to"]
-    print(f"Atual || from: {actual_from} | to: {actual_to} ")
     return actual_from, actual_to
 
 def calculate_next_timestamps(subtitle):
     next_timestamps = subtitle["offsets"]
     next_from = next_timestamps["from"]
     next_to = next_timestamps["to"]
-    print(f"Next || from: {next_from} | to: {next_to} ")
     return next_from, next_to
     
 async def build_audio(subtitles, output, voice_f, adjusted_f):
     final_audio = AudioSegment.silent(duration=0)
+    desvio = 0
     for i, sub in enumerate(subtitles):
         voice_file = f"{voice_f}{i}.mp3"
-        actual_from = actual_to = next_from = next_to = 0
+        actual_from = actual_to = next_from = 0
         actual_from, actual_to = calculate_actual_timestamps(sub)
         if (i < len(subtitles) - 1):
-            next_from, next_to = calculate_next_timestamps(subtitles[i+1])
+            next_from, _ = calculate_next_timestamps(subtitles[i+1])
         text_pt = sub["text"]
+        print(f"Traduzindo: {text_pt}")
         if i == 0:
             final_audio += AudioSegment.silent(duration=actual_from)
         # salvar cada pedaço de áudio em um arquivo temporário
         voice = await save_chunk(text_pt, voice_file)
+
+
+
+
+
+        # end_audio_silence_offset = 0
+        # # verificando espaço no final do audio
+        silent_chunks = detect_silence(
+            voice,
+            min_silence_len=500,
+            silence_thresh=-100000
+        )
+        # for i, sc in enumerate(silent_chunks):
+        #     print(f"Silent Chunk[{i}]: {sc}")
+        # if (silent_chunks):
+        #     start_end_offset, end_end_offset = silent_chunks[-1]
+        #     end_audio_silence_offset = end_end_offset - start_end_offset
+        #     print(f"end_audio_silence_offset: {end_audio_silence_offset} | start_end_offset: {start_end_offset} | end_end_offset: {end_end_offset}")
+
         voice_len = len(voice)
-        espaco_legenda = actual_to - actual_from
-        diff_from_subtitles = next_from - actual_to
+        print(f"Antes! voice len: {voice_len}")
+        voice = voice[0:silent_chunks[-1][0]]
+        voice_len = len(voice)
+        print(f"Depois! voice len: {voice_len}")
+
+        # if end_audio_silence_offset > 0:
+        #     voice_len -= end_audio_silence_offset
+        
+        if i < len(subtitles) - 1:
+            espaco_legenda = next_from - actual_from
+        else:
+            espaco_legenda = actual_to - actual_from
         diff_espaco_legenda = espaco_legenda - voice_len
-        print(f"espaco_legenda: {espaco_legenda} | diff_from_subtitles: {diff_from_subtitles} | diff_espaco_legenda: {diff_espaco_legenda}")
-        print(f"\nduration: {voice_len} | text: {text_pt}")
-        silence_between = AudioSegment.silent(duration=0)
-        if (diff_from_subtitles > 0):
-            silence_between = AudioSegment.silent(\
-                duration=diff_from_subtitles + diff_espaco_legenda)
-        final_audio += voice + silence_between
+
+        if diff_espaco_legenda < 0:
+            # ajustando velocidade
+            speed = voice_len / espaco_legenda
+            print(f"speed: {speed}")
+            if (speed < 1.5):
+                voice = speedup(voice, playback_speed=speed)
+                voice_len = len(voice)
+                if i < len(subtitles) - 1:
+                    espaco_legenda = next_from - actual_from
+                else:
+                    espaco_legenda = actual_to - actual_from
+                diff_espaco_legenda = espaco_legenda - voice_len
+            print(f"Sem espaço | diff_espaco_legenda: {diff_espaco_legenda}")
+
+        # ajuste = 0
+        # if diff_espaco_legenda < 0:
+        #     print(f"Falta espaço para a legenda: {diff_espaco_legenda}")
+        #     desvio += diff_espaco_legenda
+        # else:
+        #     if (desvio * -1) > diff_espaco_legenda and diff_espaco_legenda > 100:
+        #         ajuste += diff_espaco_legenda - 100
+        #         desvio += ajuste
+        #     else:
+        #         ajuste = desvio
+        #         desvio = 0
+
+        
+
+        # print(f"Espaço: {diff_espaco_legenda} | Desvio: {desvio} | Ajuste: {ajuste}")
+
+        silence = AudioSegment.silent(duration=diff_espaco_legenda) # - ajuste)
+        final_audio += voice + silence
 
     final_audio.export(output, format="wav")
     filesys.limpar_temp_folder()
@@ -201,6 +258,5 @@ def remove_chunks(voice_file, adjusted_file):
 def get_audio_part(audio_file, start, end, file_out):
     audio = AudioSegment.from_file(audio_file)
     cut_segment = audio[start:end]
-    print(f"start: {start} | end: {end} | audio len: {len(audio)} | cut_audio len: {len(cut_segment)}")
     cut_segment = cut_segment.set_frame_rate(16000).set_channels(1).set_sample_width(2)
     cut_segment.export(file_out, format="wav")

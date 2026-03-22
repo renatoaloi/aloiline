@@ -101,15 +101,14 @@ async def gerar_narracao(subtitles, clip_name):
     print("Gerando narração em português, aguarde...")
     narration_file = f"audio/{get_timestamp()}_{clip_name}_narration.wav"
     voice_file = f"temp/{get_timestamp()}_tmp_voice_"
-    adjusted_file = f"temp/{get_timestamp()}_tmp_voice_adjusted_"
     narracoes = [f for f in fileLib.listar_diretorio("audio") if f"{clip_name}_narration" in f]
     if narracoes:
         narration_file = fileLib.combinar_caminhos("audio", narracoes[0])
         i = input(f"Narração para '{clip_name}' já existe, deseja refazer? (s/n): ")
         if i.lower() == "s":
-            await audioLib.build_audio(subtitles, narration_file, voice_file, adjusted_file)
+            await audioLib.build_audio(subtitles, narration_file, voice_file)
     else:
-        await audioLib.build_audio(subtitles, narration_file, voice_file, adjusted_file)
+        await audioLib.build_audio(subtitles, narration_file, voice_file)
     return narration_file
 
 async def verificar_legendas_antes_continuar(clip_name, subtitles):

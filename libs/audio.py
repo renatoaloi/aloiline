@@ -108,9 +108,8 @@ def calculate_next_timestamps(subtitle):
     next_to = next_timestamps["to"]
     return next_from, next_to
     
-async def build_audio(subtitles, output, voice_f, adjusted_f):
+async def build_audio(subtitles, output, voice_f):
     final_audio = AudioSegment.silent(duration=0)
-    desvio = 0
     for i, sub in enumerate(subtitles):
         voice_file = f"{voice_f}{i}.mp3"
         actual_from = actual_to = next_from = 0
@@ -121,46 +120,22 @@ async def build_audio(subtitles, output, voice_f, adjusted_f):
         print(f"Traduzindo: {text_pt}")
         if i == 0:
             final_audio += AudioSegment.silent(duration=actual_from)
-        # salvar cada pedaço de áudio em um arquivo temporário
         voice = await save_chunk(text_pt, voice_file)
-
-
-
-
-
-        # end_audio_silence_offset = 0
-        # # verificando espaço no final do audio
         silent_chunks = detect_silence(
             voice,
             min_silence_len=500,
             silence_thresh=-100000
         )
-        # for i, sc in enumerate(silent_chunks):
-        #     print(f"Silent Chunk[{i}]: {sc}")
-        # if (silent_chunks):
-        #     start_end_offset, end_end_offset = silent_chunks[-1]
-        #     end_audio_silence_offset = end_end_offset - start_end_offset
-        #     print(f"end_audio_silence_offset: {end_audio_silence_offset} | start_end_offset: {start_end_offset} | end_end_offset: {end_end_offset}")
-
         voice_len = len(voice)
-        print(f"Antes! voice len: {voice_len}")
         voice = voice[0:silent_chunks[-1][0]]
         voice_len = len(voice)
-        print(f"Depois! voice len: {voice_len}")
-
-        # if end_audio_silence_offset > 0:
-        #     voice_len -= end_audio_silence_offset
-        
         if i < len(subtitles) - 1:
             espaco_legenda = next_from - actual_from
         else:
             espaco_legenda = actual_to - actual_from
         diff_espaco_legenda = espaco_legenda - voice_len
-
         if diff_espaco_legenda < 0:
-            # ajustando velocidade
             speed = voice_len / espaco_legenda
-            print(f"speed: {speed}")
             if (speed < 1.5):
                 voice = speedup(voice, playback_speed=speed)
                 voice_len = len(voice)
@@ -169,27 +144,8 @@ async def build_audio(subtitles, output, voice_f, adjusted_f):
                 else:
                     espaco_legenda = actual_to - actual_from
                 diff_espaco_legenda = espaco_legenda - voice_len
-            print(f"Sem espaço | diff_espaco_legenda: {diff_espaco_legenda}")
-
-        # ajuste = 0
-        # if diff_espaco_legenda < 0:
-        #     print(f"Falta espaço para a legenda: {diff_espaco_legenda}")
-        #     desvio += diff_espaco_legenda
-        # else:
-        #     if (desvio * -1) > diff_espaco_legenda and diff_espaco_legenda > 100:
-        #         ajuste += diff_espaco_legenda - 100
-        #         desvio += ajuste
-        #     else:
-        #         ajuste = desvio
-        #         desvio = 0
-
-        
-
-        # print(f"Espaço: {diff_espaco_legenda} | Desvio: {desvio} | Ajuste: {ajuste}")
-
-        silence = AudioSegment.silent(duration=diff_espaco_legenda) # - ajuste)
+        silence = AudioSegment.silent(duration=diff_espaco_legenda)
         final_audio += voice + silence
-
     final_audio.export(output, format="wav")
     filesys.limpar_temp_folder()
 

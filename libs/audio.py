@@ -112,43 +112,21 @@ async def build_audio(subtitles, output, voice_f, adjusted_f):
     final_audio = AudioSegment.silent(duration=0)
     for i, sub in enumerate(subtitles):
         voice_file = f"{voice_f}{i}.mp3"
-        
-        #adjusted_file = f"{adjusted_f}{i}.mp3"
-        #next_offsets = subtitles[i+1]["offsets"]
-        #offsets = sub["offsets"]
-        #actual_offsets = [] 
-        #next_offsets = []
-        #if (i < len(subtitles) - 1):
-        #    actual_offsets, next_offsets = calculate_timestamps(sub, subtitles[i+1]["offsets"])
-
         actual_from = actual_to = next_from = next_to = 0
         actual_from, actual_to = calculate_actual_timestamps(sub)
         if (i < len(subtitles) - 1):
             next_from, next_to = calculate_next_timestamps(subtitles[i+1])
-        
         text_pt = sub["text"]
-
         if i == 0:
             final_audio += AudioSegment.silent(duration=actual_from)
-
         # salvar cada pedaço de áudio em um arquivo temporário
         voice = await save_chunk(text_pt, voice_file)
         voice_len = len(voice)
         espaco_legenda = actual_to - actual_from
         diff_from_subtitles = next_from - actual_to
         diff_espaco_legenda = espaco_legenda - voice_len
-
         print(f"espaco_legenda: {espaco_legenda} | diff_from_subtitles: {diff_from_subtitles} | diff_espaco_legenda: {diff_espaco_legenda}")
         print(f"\nduration: {voice_len} | text: {text_pt}")
-        
-        #if voice_len <= espaco_legenda and diff_espaco_legenda > 0:
-            #silence = AudioSegment.silent(duration=diff_espaco_legenda)
-            #final_audio += voice + silence
-        #    print(f"Audio é menor que a legenda")
-        #else:
-        #    print(f"Audio é MAIOR que a legenda")
-        #    final_audio += voice
-
         silence_between = AudioSegment.silent(duration=0)
         if (diff_from_subtitles > 0):
             silence_between = AudioSegment.silent(\

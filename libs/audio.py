@@ -27,7 +27,6 @@ def filter_segments(segments, min_duration):
 
 def refine_start(frames, start_frame, end_frame):
     for i in range(start_frame, end_frame):
-        #print(f"Refined frame[{i}]: {frames[i]}")
         rms = audioop.rms(frames[i], 2)
         if rms > 1200:
             return i
@@ -95,66 +94,66 @@ def extract_audio(video_file, audio_file):
     ]
     subprocess.run(cmd)
 
+def calculate_actual_timestamps(subtitle):
+    actual_timestamps = subtitle["offsets"]
+    actual_from = actual_timestamps["from"]
+    actual_to = actual_timestamps["to"]
+    print(f"Atual || from: {actual_from} | to: {actual_to} ")
+    return actual_from, actual_to
+
+def calculate_next_timestamps(subtitle):
+    next_timestamps = subtitle["offsets"]
+    next_from = next_timestamps["from"]
+    next_to = next_timestamps["to"]
+    print(f"Next || from: {next_from} | to: {next_to} ")
+    return next_from, next_to
+    
 async def build_audio(subtitles, output, voice_f, adjusted_f):
     final_audio = AudioSegment.silent(duration=0)
     for i, sub in enumerate(subtitles):
         voice_file = f"{voice_f}{i}.mp3"
-        adjusted_file = f"{adjusted_f}{i}.mp3"
         
-        timestamps = sub["timestamps"]
-        offsets = sub["offsets"]
+        #adjusted_file = f"{adjusted_f}{i}.mp3"
+        #next_offsets = subtitles[i+1]["offsets"]
+        #offsets = sub["offsets"]
+        #actual_offsets = [] 
+        #next_offsets = []
+        #if (i < len(subtitles) - 1):
+        #    actual_offsets, next_offsets = calculate_timestamps(sub, subtitles[i+1]["offsets"])
+
+        actual_from = actual_to = next_from = next_to = 0
+        actual_from, actual_to = calculate_actual_timestamps(sub)
+        if (i < len(subtitles) - 1):
+            next_from, next_to = calculate_next_timestamps(subtitles[i+1])
+        
         text_pt = sub["text"]
 
         if i == 0:
-            final_audio += AudioSegment.silent(duration=offsets["from"])
-
-        # target_duration = 0
-        # if i + 1 < len(subtitles):
-        #     # da segunda legenda em diante pega a diferença do espaço entre elas
-        #     #next_timestamp = subtitles[i + 1]["offsets"]
-        #     next_timestamp = subtitles[i + 1]["timestamps"]
-        #     #next_timestamp_from = next_timestamp["from"]
-        #     next_timestamp_from = utilLib.srt_time_to_ms(next_timestamp["from"])
-        #     #actual_timestamp_from = offsets["from"]
-        #     actual_timestamp_from = utilLib.srt_time_to_ms(timestamps["from"])
-        #     target_duration = next_timestamp_from - actual_timestamp_from
-        #     print(f"##{i}## :: Next time [from]: {next_timestamp_from} | Actual time [from]: {actual_timestamp_from}")
-        # else:
-        #     # se for o primeiro, pega o tamanho da legenda
-        #     #actual_timestamp_to = offsets["to"] 
-        #     actual_timestamp_to = utilLib.srt_time_to_ms(timestamps["to"])
-        #     #actual_timestamp_from = offsets["from"] 
-        #     actual_timestamp_from = utilLib.srt_time_to_ms(timestamps["from"])
-        #     target_duration = actual_timestamp_to - actual_timestamp_from
-        #     print(f"##{i}## :: Actual time [to]: {actual_timestamp_to} | Actual time [from]: {actual_timestamp_from}")
-
-        # if target_duration == 0:
-        #     target_duration = 1
-        # elif target_duration < 0:
-        #     target_duration *= -1
+            final_audio += AudioSegment.silent(duration=actual_from)
 
         # salvar cada pedaço de áudio em um arquivo temporário
         voice = await save_chunk(text_pt, voice_file)
+        voice_len = len(voice)
+        espaco_legenda = actual_to - actual_from
+        diff_from_subtitles = next_from - actual_to
+        diff_espaco_legenda = espaco_legenda - voice_len
 
-        # determinando velocidade de ajuste necessária para o pedaço de áudio se encaixar na duração da legenda
-        #speed = len(voice) / target_duration
-
-        # ajuste de silêncio
-        #silent = AudioSegment.silent(duration=target_duration - len(voice)) #len(voice)*1000)
-
-        print(f"text: {text_pt}")
+        print(f"espaco_legenda: {espaco_legenda} | diff_from_subtitles: {diff_from_subtitles} | diff_espaco_legenda: {diff_espaco_legenda}")
+        print(f"\nduration: {voice_len} | text: {text_pt}")
         
-        #voice_adjusted = adjust_chunk(speed, voice_file, adjusted_file)
-        
-        # if filesys.file_exists(adjusted_file):
-        #     #silent = AudioSegment.silent(duration=target_duration - len(voice_adjusted))
-        #     final_audio += voice_adjusted + silent
-        # else:
-        #     final_audio += voice + silent
-        final_audio += voice
+        #if voice_len <= espaco_legenda and diff_espaco_legenda > 0:
+            #silence = AudioSegment.silent(duration=diff_espaco_legenda)
+            #final_audio += voice + silence
+        #    print(f"Audio é menor que a legenda")
+        #else:
+        #    print(f"Audio é MAIOR que a legenda")
+        #    final_audio += voice
 
-        #print(f"silent: {len(silent)} | silent_duration: {target_duration - len(voice)} | speed: {speed} | len(voice): {len(voice)} | target_duration: {target_duration}\n")
-        #remove_chunks(voice_file, adjusted_file)
+        silence_between = AudioSegment.silent(duration=0)
+        if (diff_from_subtitles > 0):
+            silence_between = AudioSegment.silent(\
+                duration=diff_from_subtitles + diff_espaco_legenda)
+        final_audio += voice + silence_between
 
     final_audio.export(output, format="wav")
     filesys.limpar_temp_folder()

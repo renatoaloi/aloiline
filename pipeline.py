@@ -42,9 +42,9 @@ async def main():
         print("1. Importar Vídeo do YouTube")
         print("2. Recortar Clipe e Audio")
         print("3. Transcrever e Gerar Legendas")
-        print(" 3.1. Gerar Timestamp das Legendas")
-        print(" 3.2. Verificar Legendas")
-        print(" 3.3. Gerar Arquivo SRT")
+        print(" 31. Gerar Timestamp das Legendas")
+        print(" 32. Verificar Legendas")
+        print(" 33. Gerar Arquivo SRT")
         print("5. Gerar Narração")
         print("6. Mostrar Dados do Video")
         print("7. Salvar Projeto")
@@ -101,20 +101,19 @@ async def main():
             print("------------------------------------------")
             print("Transcrição e geração de legendas finalizadas!")
             print('\n')
-        elif choice == "3.1":
+        elif choice == "31":
             print("Calculando faixas de silêncio...")
             print("------------------------------------------")
             if (isVideoLoaded() and isAudioLoaded()):
                 audio = video["audio"]
-                clip = video["clip"]
-                silence_file = aloiline.extrair_trechos_narracao(audio["file"], clip["name"])
+                silence_file = aloiline.extrair_trechos_narracao(audio["file"])
                 video["silence"] = { "file": silence_file }
             else:
                 print("Arquivos de vídeo/áudio não encontrados! Execute as etapas anteriores, antes de continuar...")
             print("------------------------------------------")
             print("Cálculo de faixas de silêncio finalizadas!")
             print('\n')
-        elif choice == "3.2":
+        elif choice == "32":
             print("Verificar legendas...")
             print("------------------------------------------")
             if (isVideoLoaded() and isAudioLoaded() and isSubtitleLoaded()):
@@ -127,7 +126,7 @@ async def main():
             print("------------------------------------------")
             print("Verificação de legendas finalizada!")
             print('\n')
-        elif choice == "3.3":
+        elif choice == "33":
             print("Gerando arquivo SRT novamente...")
             print("------------------------------------------")
             subtitle = video["subtitle"]

@@ -10,14 +10,9 @@ from libs import util as utilLib
 
 def transcrever_legendas(audio_file, transcript_file, tmp_file):
 
-    x_file = tmp_file + "full_temp.wav"
-    print(f"temp_full_wav #0: {x_file}")
-
+    original_file = tmp_file + "full_temp.wav"
     # from mp3 to wav e retorna arquivo temp wave
-    temp_full_wav = transcriber.prepare_audio(audio_file, x_file)
-
-    print(f"temp_full_wav #1: {temp_full_wav} | X File: {x_file}")
-
+    temp_full_wav = transcriber.prepare_audio(audio_file, original_file)
     # separa segmentos de timestamp de legendas
     segments_in = gerar_timestamp_legendas(temp_full_wav, "", False)
 
@@ -27,21 +22,12 @@ def transcrever_legendas(audio_file, transcript_file, tmp_file):
         start_ms = int(start * 1000)
         end_ms = int(end * 1000)
         print(f"{utilLib.format_time(start)} → {utilLib.format_time(end)}")
-
-        print(f"temp_full_wav #2: {temp_full_wav}")
-        
         temp_part_wav = tmp_file + f"part_temp_{start_ms}.wav"
         audioLib.get_audio_part(temp_full_wav, start_ms, end_ms, temp_part_wav)
-        print(f"Part temp file: {temp_part_wav}")
-
-        print(f"temp_full_wav #3: {temp_full_wav}")
-
         segments = transcriber.transcribe("", False, temp_part_wav)
-
         text = ""
         for segment in segments:
             text += f" {segment['text']}"
-        
         if len(text.strip()) > 4: #minimo de caracteres para gerar timestamp, senão ignora
             segments_out.append({
                 "timestamps": {
@@ -54,15 +40,9 @@ def transcrever_legendas(audio_file, transcript_file, tmp_file):
                 },
                 "text": text.replace("  ", " ").strip()
             })
-
-    #for start, end in segments_in:
-    #    tmp_file_del = f"{tmp_file}{round(start*1000)}.wav"
-    #    filesys.remove_file(tmp_file_del)
-
     filesys.limpar_temp_folder()
     filesys.salvar_arquivo_json(transcript_file, segments_out)
     return segments
-    #return []
 
 def traduzir_legendas_em_lote(transcript_file, json_file, srt_file):
     translator.translate(transcript_file, json_file, srt_file)
@@ -89,23 +69,13 @@ def gerar_timestamp_legendas(audio_file, tmp_file="", is_mp3=True):
     merged = audioLib.merge_segments(raw_segments, silenceLib.max_gap)
     filtered = audioLib.filter_segments(merged, silenceLib.min_duration)
 
-    #filesys.remove_file(temp_wav)
-    
     refined_segments = []
     for start, end in filtered:
         frame_duration_ms = round(silenceLib.frame_duration / 1000, 2)
-        
         start_frame = int(start / frame_duration_ms)
         end_frame = int(end / frame_duration_ms)
-
-        print(f"Start Frame: {start_frame} | End Frame: {end_frame}")
-
         new_start_frame = audioLib.refine_start(frames, start_frame, end_frame)
         new_start = new_start_frame * frame_duration_ms
-
         new_start = round(new_start, 2)
-        print(f"New Start Frame: {new_start} | End Frame: {end_frame}")
-
         refined_segments.append((new_start, end))
-
     return refined_segments

@@ -9,13 +9,7 @@ agora = datetime.datetime.now()
 def get_timestamp():
     return agora.strftime("%Y%m%d_%H%M%S")
 
-def extrair_trechos_narracao(audio_file, clip_name):
-    # silence_file = f"transcripts/{get_timestamp()}_{clip_name}_silence_tracks.json"
-    # print(f"Calculando faixas de silêncio do arquivo {audio_file}, aguarde...")
-    # silence_tracks = audioLib.detect_silence_audio(audio_file)
-    # print("Salvando faixas de silêncio...")
-    # fileLib.salvar_arquivo_json(silence_file, silence_tracks)
-    # return silence_file
+def extrair_trechos_narracao(audio_file):
     segments = legendas.gerar_timestamp_legendas(audio_file)
     print("\n🎧 Segmentos de narração detectados:\n")
     for start, end in segments:

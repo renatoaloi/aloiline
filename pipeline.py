@@ -1,5 +1,6 @@
 import asyncio
 from pdb import main
+import re
 
 from libs import filesys
 from application import aloiline
@@ -20,7 +21,8 @@ async def main():
         "transcript": None,
         "narracao": None,
         "json": None,
-        "silence": None
+        "silence": None,
+        "volume": 0.3
     }
     def isVideoLoaded():
         return video["title"] and video["code"] and video["url"] and video["clip"]
@@ -45,6 +47,7 @@ async def main():
         print(" 31. Gerar Timestamp das Legendas")
         print(" 32. Verificar Legendas")
         print(" 33. Gerar Arquivo SRT")
+        print(" 34. Ajustar volume da transcrição")
         print("5. Gerar Narração")
         print("6. Mostrar Dados do Video")
         print("7. Salvar Projeto")
@@ -93,7 +96,7 @@ async def main():
                 clip = video["clip"]
                 audio = video["audio"]
                 transcript_file, json_file, srt_file = \
-                    aloiline.transcrever_audio_gerar_legendas(clip["name"], audio["file"])
+                    aloiline.transcrever_audio_gerar_legendas(clip["name"], audio["file"], video["volume"])
                 video["transcript"] = { "file": transcript_file }
                 video["subtitle"] = { "file": json_file, "srt_file": srt_file }
             else:
@@ -133,6 +136,18 @@ async def main():
             aloiline.gerar_srt_novamente(subtitle["file"], subtitle["srt_file"])
             print("------------------------------------------")
             print("Geração do arquivo SRT finalizada!")
+            print('\n')
+        elif choice == "34":
+            print("Ajustando o volume de narração...")
+            print("------------------------------------------")
+            opcao_atual = video["volume"]
+            
+            opcao = input(f"Digite o volume do vídeo ({opcao_atual}): ")
+            if re.match(r'^-?\d+(?:\.\d+)$', opcao) is not None:
+                video["volume"] = float(opcao)
+                
+            print("------------------------------------------")
+            print("Ajuste do volume de narração finalizado!")
             print('\n')
         elif choice == "5":
             print("Gerando narração...")

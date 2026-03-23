@@ -1,5 +1,8 @@
 import webrtcvad
 import sys
+import io
+from pydub import AudioSegment
+import audioop
 
 from libs import filesys
 from libs.gpu.whisper_vulkan import driver as transcriber
@@ -8,13 +11,13 @@ from libs.silence import driver as silenceLib
 from libs import audio as audioLib
 from libs import util as utilLib
 
-def transcrever_legendas(audio_file, transcript_file, tmp_file):
+def transcrever_legendas(audio_file, transcript_file, tmp_file, volume=0.3):
 
     original_file = tmp_file + "full_temp.wav"
     # from mp3 to wav e retorna arquivo temp wave
     temp_full_wav = transcriber.prepare_audio(audio_file, original_file)
     # separa segmentos de timestamp de legendas
-    segments_in = gerar_timestamp_legendas(temp_full_wav, "", False)
+    segments_in = gerar_timestamp_legendas(temp_full_wav, "", False, volume)
 
     segments_out = []
     print("\n🎧 Segmentos de narração detectados:\n")
@@ -53,12 +56,22 @@ def salvar_arquivo_json_legendas(segments, file):
 def gerar_arquivo_srt_legendas(data, srt_file):
     translator.json_to_srt(data, srt_file)
 
-def gerar_timestamp_legendas(audio_file, tmp_file="", is_mp3=True):
+def gerar_timestamp_legendas(audio_file, tmp_file="", is_mp3=True, volume=0.3):
     temp_wav = audio_file
     if is_mp3:
         temp_wav = transcriber.prepare_audio(audio_file, tmp_file + "timestamps.wav")
 
     audio, _ = audioLib.read_wave(temp_wav, silenceLib.sample_rate)
+    # audio = AudioSegment.from_raw(
+    #     io.BytesIO(audio),
+    #     sample_width=2,    # 16-bit
+    #     frame_rate=16000,  # 16kHz
+    #     channels=1         # Mono
+    # )
+
+    # sample width 2 = 16-bit PCM
+    audio = audioop.mul(audio, 2, volume)
+
     frames = list(audioLib.frame_generator(audio, silenceLib.sample_rate, \
                                            silenceLib.frame_duration, \
                                             silenceLib.bytes_per_sample))

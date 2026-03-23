@@ -59,7 +59,7 @@ def cortar_video_processar_audio(clip_start, clip_end, clip_file, video_file, au
     print("Extraindo áudio...")
     audioLib.extract_audio(clip_file, audio_file)
 
-def transcrever_audio_gerar_legendas(clip_name, audio_file):
+def transcrever_audio_gerar_legendas(clip_name, audio_file, volume):
     transcript_file = f"transcripts/{get_timestamp()}_{clip_name}.json"
     srt_file = f"subtitles/{get_timestamp()}_{clip_name}.srt"
     srt_json = f"subtitles/{get_timestamp()}_{clip_name}.json"
@@ -75,10 +75,10 @@ def transcrever_audio_gerar_legendas(clip_name, audio_file):
             transcript_file = fileLib.combinar_caminhos("transcripts", transcript[0])
         else:
             print("Transcrevendo, aguarde...")
-            legendas.transcrever_legendas(audio_file, transcript_file, tmp_file)
+            legendas.transcrever_legendas(audio_file, transcript_file, tmp_file, volume)
     else:
         print("Transcrevendo, aguarde...")
-        legendas.transcrever_legendas(audio_file, transcript_file, tmp_file)
+        legendas.transcrever_legendas(audio_file, transcript_file, tmp_file, volume)
 
     # check if subtitle already exists
     subtitles = [f for f in fileLib.listar_diretorio("subtitles") if clip_name in f and ".json" in f]

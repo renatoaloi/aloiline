@@ -223,6 +223,9 @@ def remove_chunks(voice_file, adjusted_file):
     if filesys.file_exists(adjusted_file):
         filesys.remove_file(adjusted_file)
 
+def get_audio_segment(audio_file):
+    return AudioSegment.from_file(audio_file)
+
 def get_audio_part(audio_file, start, end, file_out):
     audio = AudioSegment.from_file(audio_file)
     cut_segment = audio[start:end]

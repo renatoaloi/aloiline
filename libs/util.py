@@ -12,6 +12,13 @@ def extract_json_array(text):
         raise ValueError("JSON não encontrado na resposta")
     return match.group(0)
 
+def format_time_ms(ts):
+    ms = ts % 1000
+    s = ts // 1000 % 60
+    m = ts // 1000 // 60 % 60
+    h = ts // 1000 // 3600
+    return f"{h:02}:{m:02}:{s:02},{ms:03}"
+
 def format_time(seconds):
     ms = int((seconds % 1) * 1000)
     s = int(seconds) % 60

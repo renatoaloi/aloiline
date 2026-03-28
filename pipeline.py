@@ -156,6 +156,7 @@ async def main():
                 subtitle = video["subtitle"] 
                 clip = video["clip"]
                 subtitles = filesys.carregar_arquivo_json(subtitle["file"])
+                print(f"Gerando narração da legenda: {subtitle['file']}")
                 narracao_file = await aloiline.gerar_narracao(subtitles, clip["name"])
                 video["narracao"] = { "file": narracao_file }
             else:

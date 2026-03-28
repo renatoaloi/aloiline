@@ -11,9 +11,10 @@ def get_timestamp():
 
 def extrair_trechos_narracao(audio_file):
     segments = legendas.gerar_timestamp_legendas(audio_file)
-    print("\n🎧 Segmentos de narração detectados:\n")
-    for start, end in segments:
-        print(f"{utilLib.format_time(start)} → {utilLib.format_time(end)}")
+    print(f"\n🎧 Segmentos de narração detectados: {len(segments)}\n")
+    if segments:
+        for start, end in segments:
+            print(f"{utilLib.format_time(start)} → {utilLib.format_time(end)}")
 
 def recuperar_video(video_url, title, pesquisa):
     downloads = [f for f in fileLib.listar_diretorio("downloads") if pesquisa in f]

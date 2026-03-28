@@ -44,13 +44,14 @@ class WhisperTranslator:
     def json_to_srt(self, data, srt_file):
         srt_lines = []
         for i, item in enumerate(data, start=1):
-            start = item["timestamps"]["from"]
-            end = item["timestamps"]["to"]
             text = item["text"]
-            srt_lines.append(f"{i}")
-            srt_lines.append(f"{start} --> {end}")
-            srt_lines.append(text)
-            srt_lines.append("")  # linha em branco
+            if text.startswith("- "):
+                start = item["timestamps"]["from"]
+                end = item["timestamps"]["to"]
+                srt_lines.append(f"{i}")
+                srt_lines.append(f"{start} --> {end}")
+                srt_lines.append(text)
+                srt_lines.append("")  # linha em branco
         with open(srt_file, "w", encoding="utf-8") as f:
             f.write("\n".join(srt_lines))
 

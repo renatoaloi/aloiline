@@ -12,39 +12,43 @@ from libs import audio as audioLib
 from libs import util as utilLib
 
 def transcrever_legendas(audio_file, transcript_file, tmp_file, volume=0.3):
-
+    segments = []
+    
     original_file = tmp_file + "full_temp.wav"
     # from mp3 to wav e retorna arquivo temp wave
     temp_full_wav = transcriber.prepare_audio(audio_file, original_file)
     # separa segmentos de timestamp de legendas
     segments_in = gerar_timestamp_legendas(temp_full_wav, "", False, volume)
 
-    segments_out = []
-    print("\n🎧 Segmentos de narração detectados:\n")
-    for start, end in segments_in:
-        start_ms = int(start * 1000)
-        end_ms = int(end * 1000)
-        print(f"{utilLib.format_time(start)} → {utilLib.format_time(end)}")
-        temp_part_wav = tmp_file + f"part_temp_{start_ms}.wav"
-        audioLib.get_audio_part(temp_full_wav, start_ms, end_ms, temp_part_wav)
-        segments = transcriber.transcribe("", False, temp_part_wav)
-        text = ""
-        for segment in segments:
-            text += f" {segment['text']}"
-        if len(text.strip()) > 4: #minimo de caracteres para gerar timestamp, senão ignora
-            segments_out.append({
-                "timestamps": {
-                    "from": utilLib.format_time(start),
-                    "to": utilLib.format_time(end)
-                },
-                "offsets": {
-                    "from": round(start*1000),
-                    "to": round(end*1000)
-                },
-                "text": text.replace("  ", " ").strip()
-            })
-    filesys.limpar_temp_folder()
-    filesys.salvar_arquivo_json(transcript_file, segments_out)
+    if segments_in:
+        segments_out = []
+        print("\n🎧 Segmentos de narração detectados:\n")
+        for start, end in segments_in:
+            start_ms = int(start * 1000)
+            end_ms = int(end * 1000)
+            print(f"{utilLib.format_time(start)} → {utilLib.format_time(end)}")
+            temp_part_wav = tmp_file + f"part_temp_{start_ms}.wav"
+            audioLib.get_audio_part(temp_full_wav, start_ms, end_ms, temp_part_wav)
+            segments = transcriber.transcribe("", False, temp_part_wav)
+            text = ""
+            for segment in segments:
+                text += f" {segment['text']}"
+            if len(text.strip()) > 4: #minimo de caracteres para gerar timestamp, senão ignora
+                segments_out.append({
+                    "timestamps": {
+                        "from": utilLib.format_time(start),
+                        "to": utilLib.format_time(end)
+                    },
+                    "offsets": {
+                        "from": round(start*1000),
+                        "to": round(end*1000)
+                    },
+                    "text": text.replace("  ", " ").strip()
+                })
+        filesys.limpar_temp_folder()
+        filesys.salvar_arquivo_json(transcript_file, segments_out)
+    else:
+        print("\n🎧 Nenhum segmento detectado!\n")
     return segments
 
 def traduzir_legendas_em_lote(transcript_file, json_file, srt_file):

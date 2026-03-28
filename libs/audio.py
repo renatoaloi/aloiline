@@ -110,21 +110,17 @@ def calculate_next_timestamps(subtitle):
     
 async def build_audio(subtitles, output, voice_f):
     final_audio = AudioSegment.silent(duration=0)
+    subtitles = [s for s in subtitles if not s["text"].startswith("- ")]
     print(f"processando legendas: {len(subtitles)}")
     diff_acc = 0
     for i, sub in enumerate(subtitles):
-
         actual_from = actual_to = next_from = 0
         actual_from, actual_to = calculate_actual_timestamps(sub)
         if (i < len(subtitles) - 1):
             next_from, _ = calculate_next_timestamps(subtitles[i+1])
-        
         espaco_total = actual_to - actual_from
         if i < len(subtitles) - 1:
             espaco_total = next_from - actual_from
-        
-        intervalo = next_from - actual_to
-
         text_pt = sub["text"]
         voice_file = f"{voice_f}{i}.mp3"
         voice = await save_chunk(text_pt, voice_file)
@@ -135,6 +131,7 @@ async def build_audio(subtitles, output, voice_f):
             speed = voice_len / espaco_total
             voice = speedup(voice, playback_speed=speed)
             voice_len_speed = len(voice)
+        initial_silence = AudioSegment.silent(duration=0)
         silence = AudioSegment.silent(duration=0)
         diff = espaco_total - voice_len_speed
         if diff < 0:
@@ -143,28 +140,13 @@ async def build_audio(subtitles, output, voice_f):
             if diff > -1 * diff_acc:
                 silence = AudioSegment.silent(duration=diff + diff_acc)
                 diff_acc = 0
-        
-        if (not text_pt.startswith("- ")): # verifica se não é legenda
-            # trabalhando trechos de audio para encaixarem nos tempos certos
-            if i == 0:
-                # | Início     | Voice        | Diff
-                # |------------|--------------|-----------
-                # | 6990       | 4176         | -816
-                final_audio += AudioSegment.silent(duration=actual_from)
-            final_audio += voice + silence
-        else:
-            mutted_voice = AudioSegment.silent(duration=len(voice))
-            final_audio += mutted_voice + silence
-        
+        if i == 0:
+            initial_silence = AudioSegment.silent(duration=actual_from)
+        final_audio += initial_silence + voice + silence
         print(f"Legenda #{i+1}: De: {utilLib.format_time_ms(actual_from)} | Até: {utilLib.format_time_ms(actual_to)}")
-        # print(f"Silencio: {len(silence)}")
-        # print(f"Espaço total: {utilLib.format_time_ms(espaco_total)}")
-        # print(f"Intervalo: {utilLib.format_time_ms(intervalo)}")
-        # print(f"Audio Len: {utilLib.format_time_ms(voice_len)}")
-        # print(f"Speed: {speed} | New Audio Len: {utilLib.format_time_ms(voice_len_speed)} | Diff: {diff} | Diff Acc: {diff_acc}")
         print(f"Text: {sub['text']}")
         if (speed > 2.0):
-            print("Áudio muito rápido!!!")
+            print(f"Áudio muito rápido!!! | Speed: {speed}")
         print('\n')
         
     final_audio.export(output, format="wav")
